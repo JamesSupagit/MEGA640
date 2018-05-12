@@ -1,0 +1,33 @@
+#include <mega640.h>
+#include <delay.h> //delay_ms()Function Enable  
+
+// PORTD.4 : LED1
+// PORTD.5 : LED2
+// PORTD.6 : LED3
+// PORTD.7 : LED4
+
+void main(void)
+{
+ DDRD=0xF0; // PORTD.4~PORTD.7 Set Output
+ PORTD=0xF0; //default, LED PORT All OFF
+ 
+ while(1)
+ {
+
+  PORTD.7=1; //LED4 OFF
+  PORTD.4=0; //LED1 ON
+  delay_ms(1000);
+  
+  PORTD.4=1; //LED1 OFF
+  PORTD.5=0; //LED2 ON
+  delay_ms(1000);
+  
+  PORTD.5=1; //LED2 OFF
+  PORTD.6=0; //LED3 ON
+  delay_ms(1000);
+  
+  PORTD.6=1; //LED3 OFF
+  PORTD.7=0; //LED4 ON
+  delay_ms(1000);
+ }
+}

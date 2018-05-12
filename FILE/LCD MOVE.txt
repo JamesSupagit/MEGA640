@@ -1,0 +1,36 @@
+#include <mega640.h>
+#include <delay.h>
+#include "text_lcd.h"
+
+void main(void)
+{
+ unsigned char i;
+ DDRL=0x00;  //PORTL DIP S/W Input Setting
+ PORTL=0xFF;
+ 
+ //*** ¿ÜºÎ Address(Data Bus)Control Setting
+ MCUCR=0x00;
+ XMCRA=0x80;
+ XMCRB=0x00;
+
+ //*** Text LCD Initialize
+ init_lcd();
+
+ //Line String output
+ line_dsp(1,0,"HELLO!!!");
+ line_dsp(2,0,"CPE-MP500!!!");
+ while(1)
+ {
+  for(i=0;i<8;i++)
+  {
+   move_dsp('R'); //Instruction 0x1C
+   delay_ms(100);
+  }
+  
+  for(i=0;i<8;i++)
+  {
+   move_dsp('L'); //Instruction 0x1C
+   delay_ms(100);
+  }
+ }
+}
