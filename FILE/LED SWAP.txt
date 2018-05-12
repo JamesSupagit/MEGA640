@@ -1,0 +1,34 @@
+#include <mega640.h>
+#include <delay.h> 
+
+void main(void)
+{
+ int count = 4;
+ int count1= 7; 
+ int loop = 1;
+ DDRD=0xF0; // PORTD.4~PORTD.7 Set Output
+ PORTD=0xF0; //default, LED PORT All OFF
+ 
+ while(1)
+ {
+ for (loop;loop<=20;loop++)  //Right to Left
+     {
+        for (count;count<=7;count++)
+      {
+       PORTD.count=0;   // 0 = On
+       delay_ms(250); 
+       PORTD.count=1;   // 1 = Off
+       delay_ms(250);
+      }
+ 
+  for (count1;count1>=4;count1--) //Left to Right  
+      {
+       PORTD.count1=0; 
+       delay_ms(250); 
+       PORTD.count1=1; 
+       delay_ms(250);
+      }
+     }
+  
+ }
+}
