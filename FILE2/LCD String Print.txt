@@ -1,0 +1,19 @@
+#include <mega640.h>
+#include "text_lcd.h"
+
+void main(void)
+{
+ //*** External Address(Data bus)Control Setting
+ MCUCR=0x00;
+ XMCRA=0x80;
+ XMCRB=0x00;
+
+ //*** Text LCD Initialize
+ init_lcd();
+
+ //*** Text LCD - String
+ line_dsp(1,0,"HELLO!! CPE-MP500");
+ line_dsp(2,3,"HELLO!! JAMES"); 
+ line_dsp(3,3,"SUPAGIT RUARN");  
+ 
+}

@@ -1,0 +1,39 @@
+#include <mega640.h>
+#include "text_lcd.h"
+
+void main(void)
+{
+ //*** External Address(Data bus)Control Setting
+ MCUCR=0x00;
+ XMCRA=0x80;
+ XMCRB=0x00;
+
+ //*** Text LCD Initialize
+ init_lcd();
+
+ 
+
+ line_pos(0,1);
+ lcd_char('E'); 
+ line_pos(0,2);
+ lcd_char('N');
+ line_pos(0,3);
+ lcd_char('G'); 
+ line_pos(0,4);
+ lcd_char('I');
+ line_pos(0,5);
+ lcd_char('N');
+ line_pos(0,6);
+ lcd_char('E');  
+ line_pos(0,7);
+ lcd_char('E');
+ line_pos(0,8);
+ lcd_char('R'); 
+ line_pos(0,9);
+ lcd_char('I');
+ line_pos(0,10);
+ lcd_char('N');
+ line_pos(0,11);
+ lcd_char('G');
+  
+}

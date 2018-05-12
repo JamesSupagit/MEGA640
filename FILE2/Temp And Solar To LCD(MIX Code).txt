@@ -1,0 +1,141 @@
+#include <mega640.h>
+#include <delay.h>
+#include "text_lcd.h"
+
+#define ADC_TEMP  0
+#define ADC_SOLAR 1
+
+#define ADC_VREF_TYPE 0x00 //VREF=AREF
+
+void main(void)
+{
+   unsigned int adc_value_solar; //AD Calculated value
+   float advf1;                   
+   unsigned int advi_solar;      
+   unsigned int temp;
+                             
+    unsigned int adc_value_temp; //ADC value
+   float advf;              
+   unsigned int advi_temp;     
+   unsigned int temp_value;    
+   
+   unsigned int tmp; 
+   //*** External Address(Data bus)Control Setting
+   MCUCR=0x00;
+   XMCRA=0x80;
+   XMCRB=0x00;
+  
+  //Analog Comparator initialization
+  ACSR=0x80;    //Analog Comparator: Off
+  ADCSRB=0x00; //Analog Comparator Input Capture by Timer/Counter 1: Off
+  
+  //ADC initialization
+  //ADC Auto Trigger Source: None
+  DIDR0=0x03;   //Digital Input Disalbe
+  DIDR2=0x00;   //ADC Voltage Reference: AREF pin
+  ADMUX=0x00;
+  ADCSRA=0x87; //ADC Clock frequency: 57.600 kHz (X-tal/128div)
+
+  DDRD=0xF0; //LED PORT set output
+  PORTD=0xF0; //LED default data, OFF
+  
+  init_lcd();
+  
+  line_dsp(0,0,"ADCW:                ");
+  line_dsp(1,0,"ADCW:               "); //AD data 
+  line_dsp(2,0,"ADCV:               "); //Solar AD voltage        
+  line_dsp(3,0,"TEMP:               ");
+  
+  while(1)
+  {
+    ADMUX=(ADC_SOLAR & 0x07) | (ADC_VREF_TYPE & 0xff); //AD multiplexer select : Temperature Sensor
+    if(ADC_TEMP & 0x08) ADCSRB |= 0x08;
+    else ADCSRB &= 0xf7; 
+    delay_us(10); // 10us delay (ADC Input voltage stabilizing)
+    ADCSRA|=0x40;  // AD convert start
+    while((ADCSRA & 0x10)==0);  // AD convert finish
+    ADCSRA|=0x10;
+    adc_value_solar=ADCW;
+   
+   //AD convert value display (0 ~ 1023)
+   line_pos(0,5);
+   temp=adc_value_solar;
+   lcd_char((unsigned char)(temp/1000)+0x30); 
+   temp=temp%1000;
+   lcd_char((unsigned char)(temp/100)+0x30);  
+   temp=temp%100;
+   lcd_char((unsigned char)(temp/10)+0x30);   
+   temp=temp%10;
+   lcd_char((unsigned char)(temp/1)+0x30);   
+   delay_ms(100);
+   
+   //환산된 태양전지 전압값 TEXT LCD에 표시 0.0 ~ 40.0
+   //Vin=(ADCW*Vref)/1024
+   advf1=((float)adc_value_solar*(3.3/1024.));
+   advi_solar=(int)(advf1*10.);
+   
+  
+    ADMUX=(ADC_TEMP & 0x07) | (ADC_VREF_TYPE & 0xff); //AD multiplexer select : Temperature sensor
+    if(ADC_TEMP & 0x08) ADCSRB |= 0x08;
+    else ADCSRB &= 0xf7;
+    //10us delay (ADC Input voltage stabilizing)
+    delay_us(10);
+    // ADC start
+    ADCSRA|=0x40;   
+    
+      
+  
+    while((ADCSRA & 0x10)==0);
+
+    ADCSRA|=0x10;
+    adc_value_temp=ADCW;
+
+    //ADC value display (0 ~ 1023)
+    line_pos(1,5);
+    tmp=adc_value_temp;
+    lcd_char((unsigned char)(tmp/1000)+0x30); //1000
+    tmp=tmp%1000;
+    lcd_char((unsigned char)(tmp/100)+0x30);  //100
+    tmp=tmp%100;
+    lcd_char((unsigned char)(tmp/10)+0x30);   //10
+    tmp=tmp%10;
+    lcd_char((unsigned char)(tmp/1)+0x30);    //1
+    delay_ms(100);
+   
+    
+    //ADC voltage(temperature) display (0.00 ~ 1.75)
+    //Vin=(ADCW*Vref)/1024
+    advf=((float)adc_value_temp*(3./1024.));
+    advi_temp=(int)(advf*100.);
+
+    line_pos(2,5);
+    tmp=advi_temp;
+    lcd_char((unsigned char)(tmp/100)+0x30); //100
+    lcd_char('.'); 
+    tmp=tmp%100;
+    lcd_char((unsigned char)(tmp/10)+0x30);  //10
+    tmp=tmp%10;
+    lcd_char((unsigned char)(tmp/1)+0x30);   //1
+    
+    //ADC voltage(temperature) display (00.0 ~ 125.0)
+    //Vout=500mV @ 0deg, Vout=10mV/deg
+    //Temp=(voltage -0.5V)/0.01
+    advf=(advf-0.5)/0.01;
+    temp_value=(int)advf*10.;
+    
+    line_pos(3,5);
+    tmp=temp_value;
+    lcd_char((unsigned char)(tmp/1000)+0x30); //1000
+    tmp=tmp%1000;
+    lcd_char((unsigned char)(tmp/100)+0x30); //100
+    tmp=tmp%100;
+    lcd_char((unsigned char)(tmp/10)+0x30);  //10 
+    tmp=tmp%10;
+    lcd_char('.');                            //decimal point 
+    lcd_char((unsigned char)(tmp/1)+0x30);   //1 
+    delay_ms(300);
+   
+
+  }
+
+}

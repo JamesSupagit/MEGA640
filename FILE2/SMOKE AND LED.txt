@@ -1,0 +1,44 @@
+#include <mega640.h>
+#include <delay.h> //delay_ms()Function Enable
+
+void main(void)
+{
+ DDRD=0xF0;  // PORTD.4~PORTD.7 Set Output
+ PORTD=0xF0; // default, LED PORT All OFF
+ 
+ DDRL=0x00;  // DIP S/W : Input port  
+ PORTL=0xFF; // PORTL set Pull Up  
+ 
+ //GAS PORT
+ DDRE=0x00;  //PORTE Set Input
+ PORTE=0x20; //Gas Sensor Input pin Set Pull-Up
+ 
+ while(1)
+ {
+  if(PINE.5) // PINE.5 High
+   {
+  if(~PINL&0x01) PORTD.4=0; //DIP S/W.0 ON : LED1 ON
+  else PORTD.4=1;           //DIP S/W.0 OFF : LED1 OFF
+  
+  if(~PINL&0x02) PORTD.5=0; //DIP S/W.1 ON : LED2 ON
+  else PORTD.5=1;           //DIP S/W.1 OFF : LED2 OFF
+  
+  if(~PINL&0x04) PORTD.6=0; //DIP S/W.2 ON : LED3 ON
+  else PORTD.6=1;           //DIP S/W.2 OFF : LED3 OFF
+  
+  if(~PINL&0x08) PORTD.7=0; //DIP S/W.3 ON : LED4 ON
+  else PORTD.7=1;           //DIP S/W.3 OFF : LED4 OFF
+    
+    delay_ms(1000);   //500ms delay
+   
+   }
+   
+   else 
+   {
+    PORTD=0xF0;    //LED All OFF
+   } 
+   
+  
+  
+ }
+}
