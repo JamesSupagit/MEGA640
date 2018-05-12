@@ -1,0 +1,122 @@
+#include <mega640.h>
+#include <delay.h>
+#include "text_lcd.h"
+
+#define ADC_TEMP 0
+#define ADC_SOLAR 1
+
+#define ADC_VREF_TYPE 0x00 //VREF=AREF
+
+void main(void)
+{
+unsigned int adc_value_temp; //ADC value
+float advf; 
+unsigned int advi_temp; 
+unsigned int temp_value;
+
+unsigned int tmp;
+
+//*** External Address(data bus) Control setting
+MCUCR=0x00;
+XMCRA=0x80;
+XMCRB=0x00;
+
+//Analog Comparator initialization
+ACSR=0x80; //Analog Comparator: Off
+ADCSRB=0x00; //Analog Comparator Input Capture by Timer/Counter 1: Off
+
+//ADC initialization
+//ADC Auto Trigger Source: None
+DIDR0=0x07; //Digital Input Disalbe
+DIDR2=0x00; //ADC Voltage Reference: AREF pin
+ADMUX=0x00;
+ADCSRA=0x87; //ADC Clock frequency: 57.600 kHz (X-tal/128div)
+
+init_lcd();
+
+line_dsp(0,0,"[ ADC TEMPERATURE ]");
+line_dsp(1,0,"ADCW: "); //ADC data display
+line_dsp(2,0,"ADCV: "); //ADC voltage display
+line_dsp(3,0,"TEMP: "); //ADC temperature display
+while(1)
+{
+ADMUX=(ADC_TEMP & 0x07) | (ADC_VREF_TYPE & 0xff); //AD multiplexer select : Temperature sensor
+if(ADC_TEMP & 0x08) ADCSRB |= 0x08;
+else ADCSRB &= 0xf7;
+//10us delay (ADC Input voltage stabilizing)
+delay_us(10);
+// ADC start
+ADCSRA|=0x40;
+
+while((ADCSRA & 0x10)==0);
+
+ADCSRA|=0x10;
+adc_value_temp=ADCW;
+
+//ADC value display (0 ~ 1023)
+line_pos(1,5);
+tmp=adc_value_temp;
+lcd_char((unsigned char)(tmp/1000)+0x30); //1000
+tmp=tmp%1000;
+lcd_char((unsigned char)(tmp/100)+0x30); //100
+tmp=tmp%100;
+lcd_char((unsigned char)(tmp/10)+0x30); //10
+tmp=tmp%10;
+lcd_char((unsigned char)(tmp/1)+0x30); //1
+delay_ms(100);
+
+
+//ADC voltage(temperature) display (0.00 ~ 1.75)
+//Vin=(ADCW*Vref)/1024
+advf=((float)adc_value_temp*(3./1024.));
+advi_temp=(int)(advf*100.);
+
+line_pos(2,5);
+tmp=advi_temp;
+lcd_char((unsigned char)(tmp/100)+0x30); //100
+lcd_char('.'); 
+tmp=tmp%100;
+lcd_char((unsigned char)(tmp/10)+0x30); //10
+tmp=tmp%10;
+lcd_char((unsigned char)(tmp/1)+0x30); //1
+
+//ADC voltage(temperature) display (00.0 ~ 125.0)
+//Vout=500mV @ 0deg, Vout=10mV/deg
+//Temp=(voltage -0.5V)/0.01
+advf=(advf-0.5)/0.01;
+temp_value=(int)advf*10.;
+
+line_pos(3,5);
+tmp=temp_value;
+lcd_char((unsigned char)(tmp/1000)+0x30); //1000
+tmp=tmp%1000;
+lcd_char((unsigned char)(tmp/100)+0x30); //100
+tmp=tmp%100;
+lcd_char((unsigned char)(tmp/10)+0x30); //10 
+tmp=tmp%10;
+lcd_char('.'); //decimal point 
+lcd_char((unsigned char)(tmp/1)+0x30); //1 
+delay_ms(300);
+
+
+if(temp_value>=250) 
+{
+DDRD=0xF0;
+PORTD=0xF0;
+PORTD.4=0;
+PORTD.5=0;
+PORTD.6=0;
+PORTD.7=0;
+delay_ms(100);
+} 
+else 
+{
+PORTD=0xF0; 
+}
+
+
+
+
+}
+
+}
